@@ -89,7 +89,7 @@ command -v ilspycmd || command -v dotnet || command -v monodis
 Use the provided setup script:
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh <workspace-name>
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh <workspace-name>
 ```
 
 **What it does**:
@@ -166,7 +166,7 @@ cd ../../..
 ### Step 1: Decompile Unpatched Version (Proprietary Code)
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
   <unpatched.jar> \
   <workspace>/decompiled/
 ```
@@ -201,7 +201,7 @@ git tag unpatched
 
 ```bash
 rm -rf <workspace>/decompiled/*
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
   <patched.jar> \
   <workspace>/decompiled/
 ```
@@ -224,7 +224,7 @@ git tag patched
 ### Step 1: Decompile Unpatched Version
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-dll.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-dll.sh \
   <unpatched.dll> \
   <workspace>/decompiled/
 ```
@@ -251,7 +251,7 @@ Follow the same git commit process as the JAR workflow:
 ### Generate Diff
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh <workspace>
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh <workspace>
 ```
 
 **What the script does**:
@@ -602,10 +602,10 @@ Always ensure you have proper authorization before analyzing any software.
 
 ```bash
 # 1. Setup workspace
-bash scripts/setup-workspace.sh myanalysis
+extension_script ~/.hacktron/extensions/patch-diff-analyzerripts/setup-workspace.sh myanalysis
 
 # 2. Decompile unpatched
-bash scripts/decompile-jar.sh unpatched.jar myanalysis/decompiled/
+extension_script ~/.hacktron/extensions/patch-diff-analyzerripts/decompile-jar.sh unpatched.jar myanalysis/decompiled/
 
 # 3. Commit unpatched
 cd myanalysis
@@ -613,13 +613,13 @@ git add -A && git commit -m "Unpatched version" && git tag unpatched
 
 # 4. Decompile patched
 rm -rf decompiled/*
-bash ../scripts/decompile-jar.sh ../patched.jar decompiled/
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh ../patched.jar decompiled/
 
 # 5. Commit patched
 git add -A && git commit -m "Patched version" && git tag patched
 
 # 6. Generate diff
-bash ../scripts/analyze-diff.sh .
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh .
 
 # 7. Analyze (read patch-analysis.diff and apply expertise)
 ```
