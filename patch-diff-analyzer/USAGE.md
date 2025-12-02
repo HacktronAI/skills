@@ -2,6 +2,39 @@
 
 **IMPORTANT**: Users may request analysis of security patches in compiled binaries (JARs, DLLs, etc.) to understand what vulnerabilities were fixed. This extension helps decompile binaries, generate diffs, and identify security-relevant changes.
 
+## Available scripts
+
+The extension have these scripts:
+
+- setup-workspace.sh `<workspace-name>`
+
+**What it does**:
+1. Creates workspace directory
+2. Initializes git repository for diff tracking
+3. Configures git user for commits
+4. Creates subdirectories: `decompiled/`, `output/`
+
+- decompile-jar.sh <app.jar> <workspace>/decompiled/
+
+**What it does**:
+1. Creates decompiled directory in workspace dir
+2. Decompiles the jar file in the dir.
+
+- decompile-dll.sh <app.dll> <workspace>/decompiled/
+
+**What it does**:
+1. Creates decompiled directory in workspace dir
+2. Decompiles the dll file in the dir.
+
+- analyze-diff.sh <workspace>
+
+**What it does**:
+1. Verifies git repository has 2+ commits
+2. Identifies `unpatched` and `patched` tags (or uses HEAD~1 and HEAD)
+3. Generates diff statistics
+4. Creates `patch-analysis.diff` file
+5. Creates `changed-files.txt` list
+
 ---
 
 ## Workflow Decision Tree
@@ -50,60 +83,13 @@ When a user requests patch analysis:
    - **ALWAYS** ask the user for clarification
    - Do not guess if there's any uncertainty
 
-### Example
-```
-User provides: myapp-old.jar and myapp-new.jar
-→ "new" clearly indicates the patched version
-```
-
 ---
 
 ## Setup & Decompilation
 
-### Prerequisites Check
-
-**MANDATORY**: Before starting, verify required tools are installed.
-
-#### For Java JARs
-At least one of these decompilers must be available:
-- `jadx` (recommended): `brew install jadx`
-- `jd-cli`: `brew install jd-cli`
-- `cfr`: Download from https://www.benf.org/other/cfr/
-
-Check availability:
-```bash
-command -v jadx || command -v jd-cli || command -v cfr
-```
-
-#### For .NET DLLs
-- `ilspycmd` (recommended): `dotnet tool install -g ilspycmd`
-- `monodis` (fallback): `brew install mono`
-
-Check availability:
-```bash
-command -v ilspycmd || command -v dotnet || command -v monodis
-```
-
 ### Workspace Setup Script
 
-Use the provided setup script:
-
-```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh <workspace-name>
-```
-
-**What it does**:
-1. Creates workspace directory
-2. Initializes git repository for diff tracking
-3. Configures git user for commits
-4. Creates subdirectories: `decompiled/`, `output/`
-
-**Output**:
-```
-✓ Git repository initialized
-✓ Workspace structure created
-Workspace ready at: /path/to/workspace-name
-```
+Use the provided setup script.
 
 ---
 
@@ -165,24 +151,7 @@ cd ../../..
 
 ### Step 1: Decompile Unpatched Version (Proprietary Code)
 
-```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
-  <unpatched.jar> \
-  <workspace>/decompiled/
-```
-
-**What the script does**:
-- Automatically detects available decompiler (jadx, jd-cli, or cfr)
-- Decompiles JAR to Java source files
-- Outputs statistics (file count, directory structure)
-
-**Expected output**:
-```
-Using jadx decompiler
-Decompiling...
-✓ Decompilation successful!
-Java files extracted: 247
-```
+- Use the JAR decompilation script provided with extension to decompile the JAR.
 
 ### Step 2: Commit Unpatched Version
 
@@ -201,9 +170,6 @@ git tag unpatched
 
 ```bash
 rm -rf <workspace>/decompiled/*
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
-  <patched.jar> \
-  <workspace>/decompiled/
 ```
 
 ### Step 4: Commit Patched Version
@@ -223,18 +189,7 @@ git tag patched
 
 ### Step 1: Decompile Unpatched Version
 
-```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-dll.sh \
-  <unpatched.dll> \
-  <workspace>/decompiled/
-```
-
-**What the script does**:
-- Automatically detects available decompiler (ilspycmd or monodis)
-- Decompiles DLL/EXE to C# source files (or IL if only monodis available)
-- Outputs statistics
-
-**Note**: If only `monodis` is available, output will be IL assembly code rather than C# source. IL is still analyzable but less readable.
+- Use the DLL decompilation script provided with extension to decompile the DLL.
 
 ### Step 2-4: Same as JAR Workflow
 
@@ -250,39 +205,11 @@ Follow the same git commit process as the JAR workflow:
 
 ### Generate Diff
 
-```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh <workspace>
-```
-
-**What the script does**:
-1. Verifies git repository has 2+ commits
-2. Identifies `unpatched` and `patched` tags (or uses HEAD~1 and HEAD)
-3. Generates diff statistics
-4. Creates `patch-analysis.diff` file
-5. Creates `changed-files.txt` list
-
-**Expected output**:
-```
-Diff Statistics
- FileHandler.java    | 15 ++++++++++----
- UploadServlet.java  |  8 ++++++--
- 2 files changed, 17 insertions(+), 6 deletions(-)
-
-✓ Diff generated: patch-analysis.diff
-  Total lines: 52
-```
+- Use nalyze-diff.sh `<workspace>` to generate `patch-analysis.diff` and `changed-files.txt` list
 
 ### Read and Analyze Diff
 
 **MANDATORY**: Read the generated diff file completely.
-
-```bash
-# Read the complete diff
-Read patch-analysis.diff
-
-# Read the list of changed files
-Read changed-files.txt
-```
 
 **DO NOT** use grep or pattern matching. The LLM must read and reason about the actual code changes.
 
@@ -412,30 +339,6 @@ For each significant change, document:
 4. **Fix effectiveness**: Does this fully mitigate the vulnerability?
 5. **Confidence level**: How certain are you about this analysis?
 
-### Example Analysis Format
-
-```
-## File: com/example/FileHandler.java:48-58
-
-### Change Description
-Added input validation and canonical path checking to getFile() method.
-
-### Vulnerability: Path Traversal (CWE-22)
-
-**Before (Vulnerable)**:
-- Directly constructed file paths from user input
-- No validation of `../` sequences
-- Attacker could access arbitrary files: `getFile("../../../../etc/passwd")`
-
-**After (Fixed)**:
-- Validates filename doesn't contain traversal sequences
-- Verifies canonical path stays within upload directory
-- Both blacklist (input validation) and whitelist (path verification) defenses
-
-### Confidence: HIGH (95%)
-The fix follows standard path traversal mitigation patterns.
-```
-
 ---
 
 ## Reporting Findings
@@ -464,10 +367,6 @@ The fix follows standard path traversal mitigation patterns.
 
 [Continue for each security-relevant change]
 
-## Non-Security Changes
-
-[Briefly mention refactoring, features, etc. that aren't security-related]
-
 ## Completeness Assessment
 
 [Is the fix complete? Any potential bypasses? Additional recommendations?]
@@ -478,37 +377,16 @@ Overall confidence: [HIGH/MEDIUM/LOW] ([percentage]%)
 
 [Explain reasoning for confidence level]
 
-## Additional Recommendations
-
-1. [If applicable, suggest further hardening]
-2. [Monitoring/logging suggestions]
-3. [Related areas to review]
-```
-
 ### Code References
-
-**IMPORTANT**: Always include file paths and line numbers.
 
 Format: `path/to/File.java:123-145`
 
 This allows users to quickly locate the relevant code.
+```
 
 ---
 
 ## Special Cases & Troubleshooting
-
-### Decompilation Failures
-
-**If decompilation fails**:
-1. Try alternative decompiler: The scripts auto-detect, but you can install others
-2. Check if binary is corrupted: Verify file integrity
-3. Handle obfuscation: Note if code is heavily obfuscated and analysis may be limited
-4. Bytecode analysis: For critical methods, can analyze raw bytecode if needed
-
-**If decompiled code has errors**:
-- Decompilers may produce invalid Java/C# for complex bytecode
-- Focus on the logical intent, not syntactic perfection
-- Note where decompilation quality is poor
 
 ### Large Diffs
 
@@ -574,56 +452,3 @@ This allows users to quickly locate the relevant code.
 - Insufficient memory
 
 **Solution**: Try alternative decompiler or analyze at bytecode level
-
----
-
-## Security & Ethics
-
-**CRITICAL**: This extension is intended for:
-- ✓ Authorized security research
-- ✓ Analyzing your own software
-- ✓ CTF challenges and educational purposes
-- ✓ Defensive security work
-- ✓ Vulnerability disclosure research
-
-**NOT for**:
-- ✗ Analyzing software without authorization
-- ✗ Reverse engineering for malicious purposes
-- ✗ Violating license agreements or copyright
-- ✗ Circumventing security for unauthorized access
-
-Always ensure you have proper authorization before analyzing any software.
-
----
-
-## Quick Reference
-
-### Full Workflow Commands
-
-```bash
-# 1. Setup workspace
-extension_script ~/.hacktron/extensions/patch-diff-analyzerripts/setup-workspace.sh myanalysis
-
-# 2. Decompile unpatched
-extension_script ~/.hacktron/extensions/patch-diff-analyzerripts/decompile-jar.sh unpatched.jar myanalysis/decompiled/
-
-# 3. Commit unpatched
-cd myanalysis
-git add -A && git commit -m "Unpatched version" && git tag unpatched
-
-# 4. Decompile patched
-rm -rf decompiled/*
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh ../patched.jar decompiled/
-
-# 5. Commit patched
-git add -A && git commit -m "Patched version" && git tag patched
-
-# 6. Generate diff
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh .
-
-# 7. Analyze (read patch-analysis.diff and apply expertise)
-```
-
----
-
-Now proceed with the user's patch analysis request!
