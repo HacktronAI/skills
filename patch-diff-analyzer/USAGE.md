@@ -89,7 +89,7 @@ command -v ilspycmd || command -v dotnet || command -v monodis
 Use the provided setup script:
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh <workspace-name>
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh <workspace-name>
 ```
 
 **What it does**:
@@ -166,7 +166,7 @@ cd ../../..
 ### Step 1: Decompile Unpatched Version (Proprietary Code)
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
   <unpatched.jar> \
   <workspace>/decompiled/
 ```
@@ -201,7 +201,7 @@ git tag unpatched
 
 ```bash
 rm -rf <workspace>/decompiled/*
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
   <patched.jar> \
   <workspace>/decompiled/
 ```
@@ -224,7 +224,7 @@ git tag patched
 ### Step 1: Decompile Unpatched Version
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-dll.sh \
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-dll.sh \
   <unpatched.dll> \
   <workspace>/decompiled/
 ```
@@ -251,7 +251,7 @@ Follow the same git commit process as the JAR workflow:
 ### Generate Diff
 
 ```bash
-bash ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh <workspace>
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh <workspace>
 ```
 
 **What the script does**:

@@ -1,0 +1,26 @@
+metadata:
+  name: "js-audit-helper"
+  version: "1.0.0"
+  author: "@hacktron"
+  type: "tool"
+
+interface:
+  display_name: "JS Audit Helper"
+  description: >
+    Prepares minified JavaScript files for LLM auditing by unminifying
+    and splitting them into manageable chunks.
+  triggers:
+    - "audit js"
+    - "unminify"
+    - "js analysis"
+
+runtime:
+  system_dependencies:
+    - name: "python3"
+      required: true
+      install_hint: "Install Python 3"
+
+  python:
+    version: ">=3.10"
+    venv_required: true
+    entry_point: "scripts/audit_prep.py"
