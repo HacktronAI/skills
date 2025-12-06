@@ -239,9 +239,12 @@ def semantic_split(source_code, filename):
         # Flush chunk if size exceeded
         if len(current_chunk) + len(node_text) > MAX_CHARS_PER_CHUNK:
             if current_chunk.strip():
+                # Calculate actual end line
+                end_line = current_lines_start + current_chunk.count('\n')
                 chunks.append({
                     "content": current_chunk,
                     "start_line": current_lines_start,
+                    "end_line": end_line,
                     "context": current_context
                 })
                 current_lines_start = child.start_point[0] + 1
@@ -255,17 +258,20 @@ def semantic_split(source_code, filename):
                 
                 for line in lines:
                     if len(sub_chunk) + len(line) + 1 > MAX_CHARS_PER_CHUNK and sub_chunk:
+                        sub_end_line = sub_start_line + sub_chunk.count('\n')
                         chunks.append({
                             "content": sub_chunk,
                             "start_line": sub_start_line,
+                            "end_line": sub_end_line,
                             "context": f"{current_context} (Split)"
                         })
                         sub_chunk = ""
-                        sub_start_line += sub_chunk.count('\n') + 1
+                        sub_start_line = sub_end_line + 1
                     sub_chunk += line + "\n"
                 
-                current_chunk = sub_chunk
-                current_lines_start = sub_start_line
+                if sub_chunk.strip():
+                    current_chunk = sub_chunk
+                    current_lines_start = sub_start_line
             else:
                 current_chunk += node_text + "\n"
         else:
@@ -273,13 +279,27 @@ def semantic_split(source_code, filename):
 
     # Capture trailing chunk
     if current_chunk.strip():
+        end_line = current_lines_start + current_chunk.count('\n')
         chunks.append({
             "content": current_chunk,
             "start_line": current_lines_start,
+            "end_line": end_line,
             "context": current_context
         })
 
     return chunks, build_security_hotspots(tree, source_bytes), code_map
+
+def get_chunk_filename(base_name, chunk_index, ext):
+    """Generate chunk filename."""
+    name = os.path.splitext(base_name)[0]
+    return f"{name}_part_{chunk_index+1:03d}{ext}"
+
+def find_chunk_for_line(chunks, line_num):
+    """Find which chunk contains a given line number and return chunk index."""
+    for i, chunk_data in enumerate(chunks):
+        if chunk_data['start_line'] <= line_num <= chunk_data['end_line']:
+            return i
+    return None
 
 def process_file(file_path, output_dir):
     """Process a single JavaScript file."""
@@ -333,6 +353,16 @@ def process_file(file_path, output_dir):
         print(f"  No chunks created for {file_path}")
         return
 
+    # Add chunk filename information to code_map
+    for definition in code_map:
+        chunk_idx = find_chunk_for_line(chunks, definition['line'])
+        if chunk_idx is not None:
+            definition['chunk_file'] = get_chunk_filename(base_name, chunk_idx, ext)
+            definition['chunk_number'] = chunk_idx + 1
+        else:
+            definition['chunk_file'] = "unknown"
+            definition['chunk_number'] = None
+
     # Save structure map
     map_path = os.path.join(file_output_dir, "_structure.json")
     try:
@@ -351,14 +381,21 @@ def process_file(file_path, output_dir):
     print(f"  -> Scanning for security patterns...")
     all_findings = scan_security_patterns(beautified)
     
+    # Add chunk filename information to findings
+    for finding in all_findings:
+        chunk_idx = find_chunk_for_line(chunks, finding['line'])
+        if chunk_idx is not None:
+            finding['chunk_file'] = get_chunk_filename(base_name, chunk_idx, ext)
+            finding['chunk_number'] = chunk_idx + 1
+        else:
+            finding['chunk_file'] = "unknown"
+            finding['chunk_number'] = None
+    
     # Group findings by chunk
     findings_by_chunk = [[] for _ in chunks]
     for finding in all_findings:
-        for i, chunk_data in enumerate(chunks):
-            chunk_end = chunk_data['start_line'] + chunk_data['content'].count('\n')
-            if chunk_data['start_line'] <= finding['line'] <= chunk_end:
-                findings_by_chunk[i].append(finding)
-                break
+        if finding['chunk_number'] is not None:
+            findings_by_chunk[finding['chunk_number'] - 1].append(finding)
 
     # Create security report
     report = {
@@ -375,7 +412,14 @@ def process_file(file_path, output_dir):
         },
         "critical_findings": [f for f in all_findings if f['category'] in ['secrets', 'dom_xss']],
         "hotspots": hotspots[:20],  # Limit to top 20
-        "chunks_with_findings": [i+1 for i, findings in enumerate(findings_by_chunk) if findings]
+        "chunks_with_findings": [
+            {
+                "chunk_number": i + 1,
+                "chunk_file": get_chunk_filename(base_name, i, ext),
+                "finding_count": len(findings)
+            }
+            for i, findings in enumerate(findings_by_chunk) if findings
+        ]
     }
 
     # Save security report
@@ -385,14 +429,15 @@ def process_file(file_path, output_dir):
 
     # Save chunks with security annotations
     for i, chunk_data in enumerate(chunks):
-        chunk_name = f"{name}_part_{i+1:03d}{ext}"
+        chunk_name = get_chunk_filename(base_name, i, ext)
         chunk_path = os.path.join(file_output_dir, chunk_name)
         
         chunk_findings = findings_by_chunk[i]
         
         header = f"// FILE: {base_name} | PART: {i+1}/{len(chunks)}\n"
+        header += f"// CHUNK FILE: {chunk_name}\n"
         header += f"// CONTEXT: {chunk_data['context']}\n"
-        header += f"// STARTING LINE: {chunk_data['start_line']}\n"
+        header += f"// LINE RANGE: {chunk_data['start_line']}-{chunk_data['end_line']}\n"
         
         if chunk_findings:
             header += f"//    SECURITY FINDINGS: {len(chunk_findings)}\n"
@@ -419,10 +464,13 @@ def simple_split_fallback(content, name):
     
     for i in range(0, len(lines), chunk_size):
         chunk_lines = lines[i:i+chunk_size]
+        start_line = i + 1
+        end_line = min(i + chunk_size, len(lines))
         chunks.append({
             "content": '\n'.join(chunk_lines),
-            "start_line": i + 1,
-            "context": f"Lines {i+1}-{min(i+chunk_size, len(lines))}"
+            "start_line": start_line,
+            "end_line": end_line,
+            "context": f"Lines {start_line}-{end_line}"
         })
     
     return chunks

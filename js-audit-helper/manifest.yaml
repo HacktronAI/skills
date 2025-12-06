@@ -7,8 +7,9 @@ metadata:
 interface:
   display_name: "JS Audit Helper"
   description: >
-    Prepares minified JavaScript files for LLM auditing by unminifying
-    and splitting them into manageable chunks.
+    Prepares minified JavaScript files for auditing by unminifying
+    and splitting them into manageable chunks, providing index files and static security report
+    for better understanding, than plain minified files.
   triggers:
     - "audit js"
     - "unminify"
