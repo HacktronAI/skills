@@ -1,14 +1,12 @@
 #!/bin/bash
-# Decompile Java JAR files using jadx
-# Usage: ./decompile-jar.sh <jar-file> <output-dir>
-
 set -e
 
 JAR_FILE="$1"
 OUTPUT_DIR="$2"
+FILTER_PACKAGE="$3"
 
 if [ -z "$JAR_FILE" ] || [ -z "$OUTPUT_DIR" ]; then
-    echo "Usage: $0 <jar-file> <output-dir>"
+    echo "Usage: $0 <jar-file> <output-dir> [package]"
     exit 1
 fi
 
@@ -24,7 +22,6 @@ echo "Input JAR: $JAR_FILE"
 echo "Output Dir: $OUTPUT_DIR"
 echo ""
 
-# Check for available decompilers
 DECOMPILER=""
 
 if command -v jadx &> /dev/null; then
@@ -38,54 +35,60 @@ elif command -v cfr &> /dev/null; then
     echo "Using CFR decompiler"
 else
     echo "Error: No Java decompiler found!"
-    echo ""
-    echo "Please install one of the following:"
-    echo "  - jadx (recommended): brew install jadx"
-    echo "  - jd-cli: brew install jd-cli"
-    echo "  - cfr: Download from https://www.benf.org/other/cfr/"
     exit 1
 fi
 
-# Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-echo "Decompiling..."
-echo ""
+if [ -n "$FILTER_PACKAGE" ]; then
+    TEMP_DIR="temp_extraction"
+    rm -rf "$TEMP_DIR"
+    mkdir -p "$TEMP_DIR"
 
-# Decompile based on available tool
-case $DECOMPILER in
-    jadx)
-        jadx -d "$OUTPUT_DIR" \
-             --no-res \
-             --no-imports \
-             --comments-level 'none' \
-             "$JAR_FILE"
-        ;;
-    jd-cli)
-        jd-cli -od "$OUTPUT_DIR" "$JAR_FILE"
-        ;;
-    cfr)
-        java -jar "$(which cfr)" "$JAR_FILE" \
-             --outputdir "$OUTPUT_DIR" \
-             --caseinsensitivefs true
-        ;;
-esac
+    FILTER_PATH=$(echo "$FILTER_PACKAGE" | sed 's/\./\//g')
 
-if [ $? -eq 0 ]; then
-    echo ""
-    echo "✓ Decompilation successful!"
-    echo "Output directory: $OUTPUT_DIR"
+    unzip -q "$JAR_FILE" "BOOT-INF/classes/$FILTER_PATH/*" -d "$TEMP_DIR" 2>/dev/null || true
+    unzip -q "$JAR_FILE" "WEB-INF/classes/$FILTER_PATH/*" -d "$TEMP_DIR" 2>/dev/null || true
+    unzip -q "$JAR_FILE" "$FILTER_PATH/*" -d "$TEMP_DIR" 2>/dev/null || true
 
-    # Show statistics
-    FILE_COUNT=$(find "$OUTPUT_DIR" -name "*.java" | wc -l | tr -d ' ')
-    echo "Java files extracted: $FILE_COUNT"
+    if [ -z "$(find "$TEMP_DIR" -name '*.class' 2>/dev/null)" ]; then
+        echo "No classes found for package: $FILTER_PACKAGE"
+        exit 1
+    fi
 
-    # Show directory structure
-    echo ""
-    echo "Directory structure:"
-    tree -L 3 -d "$OUTPUT_DIR" 2>/dev/null || find "$OUTPUT_DIR" -type d -maxdepth 3 | head -20
+    case $DECOMPILER in
+        jadx)
+            jadx -d "$OUTPUT_DIR" --no-res --no-imports "$TEMP_DIR"
+            ;;
+        jd-cli)
+            jd-cli -od "$OUTPUT_DIR" "$TEMP_DIR"
+            ;;
+        cfr)
+            find "$TEMP_DIR" -name "*.class" -exec java -jar "$(which cfr)" {} --outputdir "$OUTPUT_DIR" \;
+            ;;
+    esac
+
 else
-    echo ""
-    echo "✗ Decompilation failed!"
-    exit 1
+    case $DECOMPILER in
+        jadx)
+            jadx -d "$OUTPUT_DIR" --no-res --no-imports "$JAR_FILE"
+            ;;
+        jd-cli)
+            jd-cli -od "$OUTPUT_DIR" "$JAR_FILE"
+            ;;
+        cfr)
+            java -jar "$(which cfr)" "$JAR_FILE" --outputdir "$OUTPUT_DIR"
+            ;;
+    esac
 fi
+
+echo ""
+echo "✓ Decompilation successful!"
+echo "Output directory: $OUTPUT_DIR"
+
+FILE_COUNT=$(find "$OUTPUT_DIR" -name "*.java" | wc -l | tr -d ' ')
+echo "Java files extracted: $FILE_COUNT"
+
+echo ""
+echo "Directory structure:"
+tree -L 3 -d "$OUTPUT_DIR" 2>/dev/null || find "$OUTPUT_DIR" -type d -maxdepth 3 | head -20

@@ -31,46 +31,98 @@ extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-worksp
 
 Creates git repo with proper structure.
 
-### 2. Extract Proprietary Code Only (WAR/Large JARs)
+### 2. Scan Binary to Identify Proprietary Packages
 
-**CRITICAL**: Skip third-party libraries to save time.
-
-```bash
-# Identify proprietary packages first
-unzip -l app.war | grep "WEB-INF/classes" | head -30
-
-# Extract only proprietary code (e.g., com/acme/*)
-mkdir temp-unpatched
-cd temp-unpatched && unzip ./unpatched.war "WEB-INF/classes/com/acme/*"
-cd WEB-INF/classes && jar cf ../../../acme-unpatched.jar . && cd ../../..
-
-# Repeat for patched version
-mkdir temp-patched
-cd temp-patched && unzip ./patched.war "WEB-INF/classes/com/acme/*"
-cd WEB-INF/classes && jar cf ../../../acme-patched.jar . && cd ../../..
-```
-
-### 3. Decompile Unpatched Version
+**CRITICAL**: For large JARs/WARs/DLLs, always scan first to identify proprietary code. This dramatically reduces decompilation time by skipping third-party libraries.
 
 ```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh ./unpatched.jar ./myanalysis/decompiled/
-# For DLL: extension_script on decompile-dll.sh ../../unpatched.dll ./myanalysis/decompiled/
+# Scan unpatched binary to identify proprietary packages
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/scan-binary.sh ./unpatched.jar
+
+# Example output:
+# --- Top Level Java Packages (Frequency Count) ---
+#    245 com.acme.app
+#    128 com.acme.util
+#     89 com.acme.security
+#     12 com.example.service
 ```
 
-### 4. Commit Unpatched
+**What to look for**:
+- Packages with high frequency counts (most likely proprietary)
+- Unique package names (not `org.*`, `com.google.*`, `org.springframework.*`, etc.)
+- Company/organization-specific prefixes (e.g., `com.acme.*`, `com.yourcompany.*`)
+
+**For .NET DLLs**: The scan shows namespace patterns. Focus on non-Microsoft namespaces.
+
+### 3. Decompile Proprietary Packages Only
+
+**MANDATORY for large files**: Use the filter parameter to decompile only proprietary packages one by one. This saves hours of decompilation time.
+
+```bash
+# Create output directory structure
+mkdir -p ./myanalysis/decompiled
+
+# Decompile each proprietary package separately
+# Replace 'com.acme.app' with actual packages from scan output
+
+# Package 1: com.acme.app
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./unpatched.jar ./myanalysis/decompiled com.acme.app
+
+# Package 2: com.acme.util
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./unpatched.jar ./myanalysis/decompiled com.acme.util
+
+# Package 3: com.acme.security
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./unpatched.jar ./myanalysis/decompiled com.acme.security
+
+# Continue for all proprietary packages identified in scan
+```
+
+**Performance benefit**: Decompiling 3-5 proprietary packages (100-500 classes) takes minutes instead of hours for full JARs with thousands of third-party classes.
+
+**Note**: The filter parameter supports:
+- Standard JAR structure: `com/acme/app/*`
+- Spring Boot JARs: `BOOT-INF/classes/com/acme/app/*`
+- WAR files: `WEB-INF/classes/com/acme/app/*`
+
+### 4. Commit Unpatched Version
+
+After decompiling all proprietary packages:
 
 ```bash
 cd ./myanalysis && 
 git add -A && git commit -m "Unpatched version" && git tag unpatched
 ```
 
-### 5. Decompile Patched Version
+### 5. Scan and Decompile Patched Version
+
+**IMPORTANT**: Use the same proprietary packages identified from the unpatched scan. If unsure, scan the patched version too:
 
 ```bash
-rm -rf decompiled/*
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh ./patched.jar ./myanalysis/decompiled/
-# For DLL: extension_script on decompile-dll.sh ../../patched.dll ./myanalysis/decompiled/
+# Optional: Scan patched version to verify packages (should be similar)
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/scan-binary.sh ./patched.jar
+
+# Decompile same proprietary packages from patched version
+# Use the SAME packages as unpatched version for accurate diffing
+
+rm -rf ./myanalysis/decompiled/*
+
+# Decompile each proprietary package (same packages as step 3)
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./patched.jar ./myanalysis/decompiled com.acme.app
+
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./patched.jar ./myanalysis/decompiled com.acme.util
+
+extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+  ./patched.jar ./myanalysis/decompiled com.acme.security
+
+# Continue for all proprietary packages
 ```
+
+**For DLLs**: Use `decompile-dll.sh` (filter parameter not yet supported for DLLs, but scan-binary.sh helps identify namespaces to focus on).
 
 ### 6. Commit Patched
 
@@ -203,8 +255,7 @@ For each finding:
 
 ## Special Cases
 
-- **Decompilation fails**: Try alternative decompiler or analyze bytecode directly
-- **Large diffs (100+ files)**: Focus on security-sensitive areas (auth, input handling, file I/O)
+- **Large diffs (100+ files)**: Focus on security-sensitive areas (auth, input handling, file I/O). Use your tools efficiently to go through the patch file for security-sensitive areas if the diff is way too large.
 - **Obfuscated code**: Note limitations, focus on logical intent
 - **No CVE provided**: Analyze all changes, categorize security relevance
 
@@ -215,3 +266,4 @@ For each finding:
 - **Read everything**: Don't skip changes, pattern-match, or use grep on diffs
 - **Authorization**: Ensure proper authorization before analyzing any software
 - **Proprietary focus**: Third-party updates are expected; proprietary changes reveal custom vulnerabilities
+- **Performance**: For JARs/WARs > 10MB or with 1000+ classes, ALWAYS use `scan-binary.sh` first, then decompile only proprietary packages using the filter parameter. This can reduce decompilation time from hours to minutes.
