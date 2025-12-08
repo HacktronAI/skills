@@ -58,7 +58,7 @@ if [ -n "$FILTER_PACKAGE" ]; then
 
     case $DECOMPILER in
         jadx)
-            jadx -d "$OUTPUT_DIR" --no-res --no-imports "$TEMP_DIR"
+            jadx -d "$OUTPUT_DIR" --no-res --no-imports --comments-level 'none' "$TEMP_DIR"
             ;;
         jd-cli)
             jd-cli -od "$OUTPUT_DIR" "$TEMP_DIR"
@@ -71,13 +71,19 @@ if [ -n "$FILTER_PACKAGE" ]; then
 else
     case $DECOMPILER in
         jadx)
-            jadx -d "$OUTPUT_DIR" --no-res --no-imports "$JAR_FILE"
+            jadx -d "$OUTPUT_DIR" \
+                --no-res \
+                --no-imports \
+                --comments-level 'none' \
+                "$JAR_FILE"
             ;;
         jd-cli)
             jd-cli -od "$OUTPUT_DIR" "$JAR_FILE"
             ;;
         cfr)
-            java -jar "$(which cfr)" "$JAR_FILE" --outputdir "$OUTPUT_DIR"
+            java -jar "$(which cfr)" "$JAR_FILE" \
+                --outputdir "$OUTPUT_DIR" \
+                --caseinsensitivefs true
             ;;
     esac
 fi
