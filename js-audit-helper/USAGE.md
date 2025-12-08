@@ -14,13 +14,13 @@ Skip if file is well-formatted AND <300 lines.
 
 ```bash
 # Single file
-extension_script ~/.hacktron/extensions/js-audit-helper/scripts/audit_prep.py target.js
+./js-audit-helper/scripts/audit_prep.py target.js
 
 # Directory (recursive)
-extension_script ~/.hacktron/extensions/js-audit-helper/scripts/audit_prep.py ./js_folder
+./js-audit-helper/scripts/audit_prep.py ./js_folder
 
 # Output location
-audit_workspace/
+./audit_workspace/
 ```
 
 ## What It Does
@@ -35,7 +35,7 @@ audit_workspace/
 
 ### Step 1: Read Static Analysis Report
 ```bash
-read_file audit_workspace/<filename>/_SECURITY_REPORT.json
+read_file ./audit_workspace/<filename>/_SECURITY_REPORT.json
 ```
 
 **CRITICAL UNDERSTANDING**: This is a **pattern-matching report**, NOT confirmed vulnerabilities. Most findings are false positives. Your job is validation. Don't fully depend on the static report, just use it as a starting point, and explore the codebase to understand and find more vulnerabilities in the process.
@@ -254,7 +254,7 @@ if (isDev) { token = "test"; }                 // Test environment
 
 ## Workflow Checklist
 
-- [ ] Run script: `extension_script ~/.hacktron/extensions/js-audit-helper/scripts/audit_prep.py <target>`
+- [ ] Run script: `./js-audit-helper/scripts/audit_prep.py <target>`
 - [ ] Read `_SECURITY_REPORT.json` (understand it's pattern-based, not confirmed vulns)
 - [ ] Grep structure map to find function locations (don't read entire file)
 - [ ] Grep code for cross-chunk patterns and data flows

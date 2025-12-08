@@ -26,7 +26,7 @@ Before decompiling, identify which file is patched:
 ### 1. Setup Workspace
 
 ```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/setup-workspace.sh myanalysis
+./patch-diff-analyzer/scripts/setup-workspace.sh myanalysis
 ```
 
 Creates git repo with proper structure.
@@ -37,7 +37,7 @@ Creates git repo with proper structure.
 
 ```bash
 # Scan unpatched binary to identify proprietary packages
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/scan-binary.sh ./unpatched.jar
+./patch-diff-analyzer/scripts/scan-binary.sh ./unpatched.jar
 
 # Example output:
 # --- Top Level Java Packages (Frequency Count) ---
@@ -66,15 +66,15 @@ mkdir -p ./myanalysis/decompiled
 # Replace 'com.acme.app' with actual packages from scan output
 
 # Package 1: com.acme.app
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./unpatched.jar ./myanalysis/decompiled com.acme.app
 
 # Package 2: com.acme.util
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./unpatched.jar ./myanalysis/decompiled com.acme.util
 
 # Package 3: com.acme.security
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./unpatched.jar ./myanalysis/decompiled com.acme.security
 
 # Continue for all proprietary packages identified in scan
@@ -102,7 +102,7 @@ git add -A && git commit -m "Unpatched version" && git tag unpatched
 
 ```bash
 # Optional: Scan patched version to verify packages (should be similar)
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/scan-binary.sh ./patched.jar
+./patch-diff-analyzer/scripts/scan-binary.sh ./patched.jar
 
 # Decompile same proprietary packages from patched version
 # Use the SAME packages as unpatched version for accurate diffing
@@ -110,13 +110,13 @@ extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/scan-binary.
 rm -rf ./myanalysis/decompiled/*
 
 # Decompile each proprietary package (same packages as step 3)
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./patched.jar ./myanalysis/decompiled com.acme.app
 
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./patched.jar ./myanalysis/decompiled com.acme.util
 
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/decompile-jar.sh \
+./patch-diff-analyzer/scripts/decompile-jar.sh \
   ./patched.jar ./myanalysis/decompiled com.acme.security
 
 # Continue for all proprietary packages
@@ -136,14 +136,14 @@ git add -A && git commit -m "Patched version" && git tag patched
 If code is already in git with version tags:
 
 ```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh .
+./patch-diff-analyzer/scripts/analyze-diff.sh .
 ```
 
 Script auto-detects unpatched/patched tags or uses last 2 commits.
 ## Generate Diff
 
 ```bash
-extension_script ~/.hacktron/extensions/patch-diff-analyzer/scripts/analyze-diff.sh .
+./patch-diff-analyzer/scripts/analyze-diff.sh .
 ```
 
 **Outputs**:
