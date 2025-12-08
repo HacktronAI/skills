@@ -14,10 +14,10 @@ Skip if file is well-formatted AND <300 lines.
 
 ```bash
 # Single file
-./js-audit-helper/scripts/audit_prep.py target.js
+audit_prep.py target.js
 
 # Directory (recursive)
-./js-audit-helper/scripts/audit_prep.py ./js_folder
+audit_prep.py ./js_folder
 
 # Output location
 ./audit_workspace/
@@ -254,7 +254,7 @@ if (isDev) { token = "test"; }                 // Test environment
 
 ## Workflow Checklist
 
-- [ ] Run script: `./js-audit-helper/scripts/audit_prep.py <target>`
+- [ ] Run script: `audit_prep.py <target>`
 - [ ] Read `_SECURITY_REPORT.json` (understand it's pattern-based, not confirmed vulns)
 - [ ] Grep structure map to find function locations (don't read entire file)
 - [ ] Grep code for cross-chunk patterns and data flows
