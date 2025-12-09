@@ -35,7 +35,7 @@ audit_prep.py ./js_folder
 
 ### Step 1: Read Static Analysis Report
 ```bash
-read_file ./audit_workspace/<filename>/_SECURITY_REPORT.json
+read_file ./audit_workspace/<filename_without_extension>/_SECURITY_REPORT.json
 ```
 
 **CRITICAL UNDERSTANDING**: This is a **pattern-matching report**, NOT confirmed vulnerabilities. Most findings are false positives. Your job is validation. Don't fully depend on the static report, just use it as a starting point, and explore the codebase to understand and find more vulnerabilities in the process.
