@@ -1,4 +1,21 @@
-# Patch Diff Analyzer - Agent Guide
+---
+name: patch-diff-analyzer
+description: >
+    Specialized in reverse-engineering compiled binaries (JARs, DLLs). 
+    Use this when the user asks to compare versions between different git tags or commits
+    or analyze binary patches to find security fixes.
+compatibility: Requires appropriate decompilers installed if wanted to decompile .jar or .dll files
+metadata:
+  name: "patch-diff-analyzer"
+  version: "0.0.1"
+  author: "@hacktron"
+  tags:
+    - "decompile"
+    - "diff jar"
+    - "security patch"
+---
+
+# Patch Diff Analyzer
 
 ## Quick Decision Flow
 

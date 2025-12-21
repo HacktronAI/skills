@@ -1,3 +1,20 @@
+---
+name: js-audit-helper
+description: >
+  Prepares minified JavaScript files for auditing by unminifying
+  and splitting them into manageable chunks, providing index files and static security report
+  for better understanding, than plain minified files.
+compatibility: Requires python installed along with jsbeautifier and tree-sitter dependencies
+metadata:
+  name: "js-audit-helper"
+  version: "0.0.1"
+  author: "@hacktron"
+  tags:
+    - "audit js"
+    - "unminify"
+    - "js analysis"
+---
+
 # JS Audit Helper - Extension Usage Guide
 
 ## Purpose
