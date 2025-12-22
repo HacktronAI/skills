@@ -1,0 +1,6 @@
+# JavaScript beautifier
+jsbeautifier==1.15.1
+# Tree-sitter core
+tree-sitter==0.23.2
+# Tree-sitter JavaScript language bindings
+tree-sitter-javascript==0.23.1
