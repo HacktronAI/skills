@@ -116,6 +116,7 @@ git add -A && git commit -m "Unpatched version" && git tag unpatched
 ### 5. Scan and Decompile Patched Version
 
 **IMPORTANT**: Use the same proprietary packages identified from the unpatched scan. If unsure, scan the patched version too:
+You can ignore any decompilation errors which is common and proceed with further analysis.
 
 ```bash
 # Optional: Scan patched version to verify packages (should be similar)
