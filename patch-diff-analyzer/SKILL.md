@@ -1,3 +1,13 @@
+---
+name: patch-diff-analyzer
+description: Specialized in reverse-engineering compiled binaries (JARs, DLLs). Use this when the user asks to compare versions, find security fixes, or analyze binary patches.
+license: MIT
+compatibility: Requires git, jadx (for JAR), ilspycmd (for DLL)
+metadata:
+  author: hacktron
+  version: "1.0.0"
+---
+
 # Patch Diff Analyzer
 
 **IMPORTANT**: Users may request analysis of security patches in compiled binaries (JARs, DLLs, etc.) to understand what vulnerabilities were fixed. This extension helps decompile binaries, generate diffs, and identify security-relevant changes.
@@ -205,7 +215,7 @@ Follow the same git commit process as the JAR workflow:
 
 ### Generate Diff
 
-- Use nalyze-diff.sh `<workspace>` to generate `patch-analysis.diff` and `changed-files.txt` list
+- Use analyze-diff.sh `<workspace>` to generate `patch-analysis.diff` and `changed-files.txt` list
 
 ### Read and Analyze Diff
 
@@ -229,72 +239,6 @@ Follow the same git commit process as the JAR workflow:
 - Custom vulnerabilities are more interesting than known library CVEs
 - Focusing on proprietary code reveals unique attack vectors
 
-**How to Filter**:
-
-1. **Identify Package Namespaces**:
-   ```bash
-   # Review changed files to identify patterns
-   cat changed-files.txt | head -100
-
-   # Common third-party prefixes to ignore:
-   # - com.fasterxml.jackson.*     (Jackson JSON)
-   # - org.springframework.*       (Spring Framework)
-   # - org.hibernate.*             (Hibernate ORM)
-   # - org.apache.*                (Apache Commons, etc.)
-   # - com.google.*                (Google libraries)
-   # - io.netty.*                  (Netty)
-   # - javax.*, jakarta.*          (Java EE specs)
-   # - org.slf4j.*, ch.qos.logback.* (Logging)
-   # - com.ctc.wstx.*              (Woodstox XML)
-   ```
-
-2. **Extract Proprietary Code Changes**:
-   ```bash
-   # Filter out third-party libraries to find proprietary code
-   grep "^decompiled/sources/" changed-files.txt | \
-     grep -v "^decompiled/sources/com/fasterxml" | \
-     grep -v "^decompiled/sources/org/springframework" | \
-     grep -v "^decompiled/sources/org/hibernate" | \
-     grep -v "^decompiled/sources/org/apache" | \
-     grep -v "^decompiled/sources/com/google" | \
-     grep -v "^decompiled/sources/io/netty" | \
-     grep -v "^decompiled/sources/javax" | \
-     grep -v "^decompiled/sources/jakarta"
-   ```
-
-3. **Identify Proprietary Namespace**:
-   - Look for company-specific package names
-   - Examples: `com.acme.*`, `com.example.*`, `com.companyname.*`
-   - Internal packages often lack open-source prefixes
-   - May use domain-based naming: `com.vendor.*`, `com.product.*`
-
-4. **Count and Report Both**:
-   ```bash
-   # Count total changes
-   wc -l changed-files.txt
-
-   # Count proprietary changes
-   grep "com/proprietary/namespace" changed-files.txt | wc -l
-   ```
-
-**Example Analysis Statement**:
-```
-Total changes: 2,626 files
-
-Third-party library updates:
-- Jackson Databind: 400+ files (known CVE fixes)
-- Woodstox XML: 150+ files (XXE/XML bomb protection)
-- Hibernate Validator: 100+ files (API changes)
-
-Proprietary code changes: 73 files
-- Package namespace: com.acme.*, com.vendor.*
-- Focus analysis on these proprietary changes
-```
-
-**After Filtering**: Proceed with detailed analysis of proprietary code only, unless user specifically requests third-party analysis.
-
----
-
 ### Step 2: Analysis Process
 
 1. **Read Every Change**: Don't skip any modifications, even small ones
@@ -315,29 +259,6 @@ Proprietary code changes: 73 files
 - Parameterized queries replacing string concatenation
 - Deserialization filters or whitelists
 - Resource limits (size, timeout, rate)
-
-**Context Clues**:
-- New imports of security libraries
-- Exception handling for security conditions
-- Early return statements (validation gates)
-- Method signatures gaining validation parameters
-- Error messages becoming more generic (info disclosure fix)
-
-**Medium-Priority**:
-- Configuration defaults changing to more secure values
-- Cryptographic algorithm/key size upgrades
-- Logging additions (may indicate security monitoring)
-- Timeout/resource limit adjustments
-
-### Reasoning Framework
-
-For each significant change, document:
-
-1. **What changed**: Describe the code modification
-2. **Security implication**: What vulnerability this addresses
-3. **Attack scenario**: How could an attacker have exploited the vulnerable version?
-4. **Fix effectiveness**: Does this fully mitigate the vulnerability?
-5. **Confidence level**: How certain are you about this analysis?
 
 ---
 
@@ -363,10 +284,6 @@ For each significant change, document:
 
 [Detailed analysis following the framework above]
 
-### File: [another/file.java:line-range]
-
-[Continue for each security-relevant change]
-
 ## Completeness Assessment
 
 [Is the fix complete? Any potential bypasses? Additional recommendations?]
@@ -374,63 +291,14 @@ For each significant change, document:
 ## Confidence Level
 
 Overall confidence: [HIGH/MEDIUM/LOW] ([percentage]%)
-
-[Explain reasoning for confidence level]
-
-### Code References
-
-Format: `path/to/File.java:123-145`
-
-This allows users to quickly locate the relevant code.
 ```
-
----
-
-## Special Cases & Troubleshooting
-
-### Large Diffs
-
-**If diff is too large** (hundreds of files changed):
-1. Start with changed-files.txt to identify likely candidates
-2. Focus on files in security-sensitive areas (auth, input handling, file I/O)
-3. Analyze in batches, asking user to confirm priority areas
-4. Look for patterns across multiple files
-
-### Ambiguous Changes
-
-**If security relevance is unclear**:
-- Present multiple interpretations
-- Rate confidence for each hypothesis
-- Explain what additional context would help
-- Recommend asking the vendor/security team
-
-### Missing Context
-
-**If analyzing blind** (no CVE/description):
-- Analyze all changes systematically
-- Categorize: definitely security / possibly security / non-security
-- For "possibly security", explain your reasoning and uncertainty
-- Don't overstate conclusions
-
----
-
-## Best Practices
-
-1. **Verify Before Analyzing**: Always check decompilation completed successfully
-2. **Read, Don't Pattern Match**: Understand the code logic, don't just grep for keywords
-3. **Full Context Matters**: Review surrounding code and entire methods
-4. **Multiple Changes May Be Related**: A fix might span several files/methods
-5. **Dependencies Count**: Check if library versions changed (pom.xml, packages.config)
-6. **Test Your Hypothesis**: If possible, explain how to reproduce/verify the vulnerability
-7. **Document Assumptions**: Be clear about what you know vs. what you're inferring
-8. **Confidence Levels**: Always provide confidence assessment for your conclusions
 
 ---
 
 ## Error Messages & Solutions
 
 ### "No decompiler found"
-**Solution**: Install a decompiler (see [Prerequisites Check](#prerequisites-check))
+**Solution**: Install jadx (for JAR) or ilspycmd (for DLL)
 
 ### "Not a git repository"
 **Solution**: Run `setup-workspace.sh` script first
@@ -444,11 +312,3 @@ This allows users to quickly locate the relevant code.
 - Check `git log` to see commits
 - May indicate files are identical
 
-### "Decompilation failed"
-**Possible causes**:
-- Corrupted binary file
-- Unsupported file format
-- Decompiler bug
-- Insufficient memory
-
-**Solution**: Try alternative decompiler or analyze at bytecode level
