@@ -66,7 +66,9 @@ Each bypass exploits a different parser differential between Go and Node.js.
 
 ## Testing Method
 
-### Method 1: Direct curl 
+### Quick PoC Testing (Direct to WAF)
+
+Use curl or Python directly against the WAF at `http://localhost:9091/`:
 
 ```bash
 curl --path-as-is -i -s -k -X POST \
@@ -77,51 +79,42 @@ curl --path-as-is -i -s -k -X POST \
     'http://localhost:9091/'
 ```
 
-**Note:** The flag appears in the `X-Action-Redirect` response header, not the body!
-
-### Method 2: Sandbox Executor
-
-The executor runs your Python code in a **sandboxed Docker container** - safe execution environment that can't affect the host system.
-
-```bash
-curl -X POST http://localhost:8009/execute \
-  -H "Content-Type: application/json" \
-  -d '{"code": "import requests\n\nresp = requests.post(\"http://waf:9090/\", ...)\nprint(resp.headers)\nprint(resp.text)"}'
-```
-
-**Response:**
-```json
-{
-  "stdout": "output from your code",
-  "stderr": "errors if any",
-  "exit_code": 0,
-  "waf_logs": ["[REQ] POST /...", "[BLOCKED] Rule 1008..."],
-  "execution_time_ms": 123
-}
-```
-
-The executor has:
-- `requests` library pre-installed
-- Network access to `http://waf:9090` (the WAF)
-- WAF debug logs captured automatically
-- 30 second timeout per execution
-
-### Python Example (print headers to capture flag)
-
 ```python
 import requests
 
 resp = requests.post(
-    "http://waf:9090/",
+    "http://localhost:9091/",
     headers={
         "Content-Type": "multipart/form-data; boundary=yyy",
         "Next-Action": "x"
     },
     data=payload
 )
-# Flag is in headers!
-print(resp.headers.get("X-Action-Redirect"))
+print(resp.status_code)
+print(resp.headers.get("X-Action-Redirect"))  # Flag is here!
 print(resp.text)
+```
+
+**Note:** The flag appears in the `X-Action-Redirect` response header, not the body!
+
+### Debugging (Sandbox Executor)
+
+Use the executor **only when you need WAF logs** to understand why a request was blocked:
+
+```bash
+curl -X POST http://localhost:8009/execute \
+  -H "Content-Type: application/json" \
+  -d '{"code": "import requests\nresp = requests.post(\"http://localhost:9091/\", ...)\nprint(resp.status_code)"}'
+```
+
+**Response includes WAF logs:**
+```json
+{
+  "stdout": "403",
+  "stderr": "",
+  "waf_logs": ["[BLOCKED] Rule 1008: Prototype Pollution detected"],
+  "execution_time_ms": 123
+}
 ```
 
 ## Example: Blocked Request
@@ -190,6 +183,8 @@ SecRule REQUEST_BODY|ARGS "@rx (?:__proto__|:constructor)" "id:1008,deny"
 1. Analyze source code in `sources/`
 2. Identify where Go and Node.js parse differently
 3. Craft payload that exploits the differential
-4. Test via executor, observe WAF logs
-5. Iterate until flag is captured
-6. **Keep hunting** - find more bypasses using different techniques!
+4. Test PoC directly against WAF at `localhost:9091`
+5. If blocked, use executor to get WAF logs and understand why
+6. Iterate until flag is captured
+7. If a technique doesn't work, **move on** - read more code, look for alternative differentials
+8. **Keep hunting** - find more bypasses using different techniques!
