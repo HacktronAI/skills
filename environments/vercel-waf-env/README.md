@@ -2,6 +2,8 @@
 
 CTF-style environment for testing WAF bypass techniques against a Coraza WAF protecting a vulnerable Next.js 16 backend.
 
+**Learn more:** [React2Shell: Vercel WAF Bypass](https://hacktron.ai/blog/react2shell-vercel-waf-bypass)
+
 ## Architecture
 
 ```

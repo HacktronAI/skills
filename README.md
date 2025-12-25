@@ -35,6 +35,27 @@ Skills are automatically discovered and can be enabled/disabled from the extensi
 | Skill | Description |
 |-------|-------------|
 | [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches |
+| [waf-bypass-hunter](./waf-bypass-hunter/) | Find WAF bypass techniques using parser differentials |
+
+## Environments
+
+Environments are isolated feedback setups for security challenges. Unlike skills (which define *what* to solve), environments provide the runtime infrastructure where agents *test* their solutions.
+
+The agent sees the skill but interacts with the environment blindly - they can't read the flag, they must capture it.
+
+```
+Analyze → Hypothesize → Test → Get Feedback → Iterate → Solve
+```
+
+| Environment | Description |
+|-------------|-------------|
+| [vercel-waf-env](./environments/vercel-waf-env/) | Coraza WAF + vulnerable Next.js 16 backend |
+
+
+**Learn more about vercel env:** [React2Shell: Vercel WAF Bypass](https://hacktron.ai/blog/react2shell-vercel-waf-bypass)
+
+
+See [environments/README.md](./environments/README.md) for details.
 
 ## Compatible Skill Repositories
 
