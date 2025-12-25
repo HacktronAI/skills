@@ -151,24 +151,24 @@ print(resp.text)
 
 Study parser implementations in `sources/`:
 
-- `sources/coraza/multipart.go` - WAF's multipart parser (Go)
-- `sources/busboy/Multipart.js` - Backend's multipart parser (Node.js)
-- `sources/nextjs/action-handler.ts` - How Next.js processes Server Actions
+- `sources/coraza/` - WAF's parser (Go)
+- `sources/busboy/` - Backend's parser (Node.js)
+- `sources/nextjs/` - How Next.js processes Server Actions
 
-## Parser Differential Hints
-
-The WAF (Go) and Backend (Node.js) may parse differently:
-- **Charset handling** - How is `charset=utf16le` processed?
-- **Duplicate headers** - Which Content-Type does each parser use?
-- **Boundary parsing** - What happens with edge cases?
-- **Encoding** - Does the WAF decode what the backend decodes?
 
 ## Success Criteria
 
-Find as many bypasses as possible. For each working bypass:
-1. Document the technique used
-2. Show the working payload
-3. Capture the flag from the response
+**IMPORTANT: A bypass is ONLY valid if the flag is successfully read.**
+
+Hypothetical or theoretical bypasses do NOT count. You must:
+1. Execute the payload against the WAF
+2. Receive the flag in the response
+3. Show the captured flag as proof
+
+For each **confirmed** bypass:
+- Document the technique used
+- Show the exact working payload
+- Show the captured flag
 
 The flag may appear in:
 - Response headers (e.g., `X-Action-Redirect`)
