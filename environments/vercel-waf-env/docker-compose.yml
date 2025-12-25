@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  waf:
+    build: ./waf
+    ports:
+      - "9091:9090"
+    environment:
+      - BACKEND_URL=http://backend:3000
+      - PROXY_PORT=9090
+    volumes:
+      - waf-logs:/var/log/waf
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "3009:3000"
+    environment:
+      - PORT=3000
+    volumes:
+      - ./flag.txt:/flag.txt:ro
+
+  executor:
+    build: ./executor
+    ports:
+      - "8009:8000"
+    environment:
+      - WAF_URL=http://waf:9090
+    volumes:
+      - waf-logs:/var/log/waf:ro
+    depends_on:
+      - waf
+
+volumes:
+  waf-logs:
