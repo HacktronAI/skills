@@ -1,4 +1,4 @@
-# Hacktron Skills
+# Hacktron Skills and Environments
 
 Community-maintained skills for offensive and defensive security capabilities. Built for security researchers, engineers, and bug hunters.
 
