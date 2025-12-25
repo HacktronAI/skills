@@ -32,10 +32,10 @@ Skills are automatically discovered and can be enabled/disabled from the extensi
 
 ## Available Skills
 
-| Skill | Description |
-|-------|-------------|
-| [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches |
-| [waf-bypass-hunter](./waf-bypass-hunter/) | Find WAF bypass techniques using parser differentials |
+| Skill | Description | Sources |
+|-------|-------------|---------|
+| [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches | - |
+| [waf-bypass-hunter](./waf-bypass-hunter/) | Find WAF bypass techniques using parser differentials | Clone these sources to ~/.hacktron/skills/waf-bypass-hunter [coraza](https://github.com/corazawaf/coraza), [busboy](https://github.com/mscdex/busboy), [next.js](https://github.com/vercel/next.js) |
 
 ## Environments
 
