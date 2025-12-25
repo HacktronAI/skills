@@ -151,9 +151,9 @@ print(resp.text)
 
 Study parser implementations in `sources/`:
 
-- `sources/coraza/` - WAF's parser (Go)
-- `sources/busboy/` - Backend's parser (Node.js)
-- `sources/nextjs/` - How Next.js processes Server Actions
+- `sources/coraza/internal/bodyprocessors/` - WAF's parser (Go)
+- `sources/busboy/lib/` - Backend's parser (Node.js)
+- `sources/nextjs/packages/next/src/server/` - Next.js server action handling
 
 
 ## Success Criteria

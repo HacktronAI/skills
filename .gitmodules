@@ -1,0 +1,9 @@
+[submodule "waf-bypass-hunter/sources/coraza"]
+	path = waf-bypass-hunter/sources/coraza
+	url = https://github.com/corazawaf/coraza
+[submodule "waf-bypass-hunter/sources/busboy"]
+	path = waf-bypass-hunter/sources/busboy
+	url = https://github.com/mscdex/busboy
+[submodule "waf-bypass-hunter/sources/nextjs"]
+	path = waf-bypass-hunter/sources/nextjs
+	url = https://github.com/vercel/next.js
