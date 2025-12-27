@@ -188,3 +188,4 @@ SecRule REQUEST_BODY|ARGS "@rx (?:__proto__|:constructor)" "id:1008,deny"
 6. Iterate until flag is captured
 7. If a technique doesn't work, **move on** - read more code, look for alternative differentials
 8. **Keep hunting** - find more bypasses using different techniques!
+
