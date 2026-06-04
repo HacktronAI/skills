@@ -1,6 +1,6 @@
-# Hacktron Skills and Environments
+# Hacktron Skills
 
-Community-maintained skills and environments for offensive and defensive security capabilities. Built for security researchers, engineers, and bug hunters.
+Community-maintained skills for offensive and defensive security capabilities. Built for security researchers, engineers, and bug hunters.
 
 ## What are Skills?
 
@@ -9,6 +9,33 @@ Skills extend AI agents with specialized security capabilities. When enabled, sk
 This repository follows the [Agent Skills specification](https://agentskills.io/specification).
 
 ## Usage
+
+### With Claude Code
+
+This repo is also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins-reference). Each skill is installable as a plugin.
+
+```
+# Register the marketplace
+/plugin marketplace add HacktronAI/skills
+
+# Browse and install from the menu
+/plugin menu
+
+# Or install a specific skill directly
+/plugin install finding-triage@hacktron
+```
+
+Install from a local clone instead:
+
+```bash
+git clone https://github.com/HacktronAI/skills.git
+```
+
+```
+# From the parent directory of the clone
+/plugin marketplace add ./skills
+/plugin install finding-triage@hacktron
+```
 
 ### With Hacktron CLI
 
@@ -34,28 +61,8 @@ Skills are automatically discovered and can be enabled/disabled from the extensi
 
 | Skill | Description | Sources |
 |-------|-------------|---------|
+| [finding-triage](./finding-triage/) | Interactively triage Hacktron findings against source (and optionally a live deployment), then fix + commit confirmed issues or set their state in Hacktron | - |
 | [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches | - |
-| [waf-bypass-hunter](./waf-bypass-hunter/) | Find WAF bypass techniques using parser differentials | Clone these sources to ~/.hacktron/skills/waf-bypass-hunter [coraza](https://github.com/corazawaf/coraza), [busboy](https://github.com/mscdex/busboy), [next.js](https://github.com/vercel/next.js) |
-
-## Environments
-
-Environments are isolated feedback setups for security challenges. Unlike skills (which define *what* to solve), environments provide the runtime infrastructure where agents *test* their solutions.
-
-The agent sees the skill but interacts with the environment blindly - they can't read the flag, they must capture it.
-
-```
-Analyze → Hypothesize → Test → Get Feedback → Iterate → Solve
-```
-
-| Environment | Description |
-|-------------|-------------|
-| [vercel-waf-env](./environments/vercel-waf-env/) | Coraza WAF + vulnerable Next.js 16 backend |
-
-
-**Learn more about vercel env:** [React2Shell: Vercel WAF Bypass](https://hacktron.ai/blog/react2shell-vercel-waf-bypass)
-
-
-See [environments/README.md](./environments/README.md) for details.
 
 ## Compatible Skill Repositories
 
