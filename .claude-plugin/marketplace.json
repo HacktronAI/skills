@@ -1,0 +1,41 @@
+{
+  "name": "hacktron",
+  "owner": {
+    "name": "Hacktron",
+    "url": "https://hacktron.ai"
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Hacktron Claude Code skills for security research, finding triage, and offensive/defensive workflows."
+  },
+  "plugins": [
+    {
+      "name": "finding-triage",
+      "version": "2.0.0",
+      "description": "Interactively validate and triage Hacktron findings against source and an optional live deployment, then fix + commit confirmed issues or set their state in Hacktron.",
+      "author": { "name": "Hacktron", "url": "https://hacktron.ai" },
+      "source": "./finding-triage"
+    },
+    {
+      "name": "patch-diff-analyzer",
+      "version": "1.0.0",
+      "description": "Reverse-engineer compiled binaries (JARs, DLLs) to decompile, diff, and analyze security patches.",
+      "author": { "name": "Hacktron", "url": "https://hacktron.ai" },
+      "source": "./patch-diff-analyzer"
+    },
+    {
+      "name": "waf-bypass-hunter",
+      "version": "1.0.0",
+      "description": "Find WAF bypasses using parser differentials between a Coraza (Go) WAF and a Next.js (Node.js) backend.",
+      "author": { "name": "Hacktron", "url": "https://hacktron.ai" },
+      "source": "./waf-bypass-hunter"
+    },
+    {
+      "name": "ctf-solver",
+      "version": "1.0.0",
+      "description": "Solve CTF challenges by analyzing descriptions, source, and challenge environments to capture flags.",
+      "author": { "name": "Hacktron", "url": "https://hacktron.ai" },
+      "source": "./ctf-solver"
+    }
+  ]
+}

@@ -10,6 +10,33 @@ This repository follows the [Agent Skills specification](https://agentskills.io/
 
 ## Usage
 
+### With Claude Code
+
+This repo is also a [Claude Code plugin marketplace](https://docs.claude.com/en/docs/claude-code/plugins-reference). Each skill is installable as a plugin.
+
+```
+# Register the marketplace
+/plugin marketplace add HacktronAI/skills
+
+# Browse and install from the menu
+/plugin menu
+
+# Or install a specific skill directly
+/plugin install finding-triage@hacktron
+```
+
+Install from a local clone instead:
+
+```bash
+git clone https://github.com/HacktronAI/skills.git
+```
+
+```
+# From the parent directory of the clone
+/plugin marketplace add ./skills
+/plugin install finding-triage@hacktron
+```
+
 ### With Hacktron CLI
 
 ```bash
@@ -34,6 +61,7 @@ Skills are automatically discovered and can be enabled/disabled from the extensi
 
 | Skill | Description | Sources |
 |-------|-------------|---------|
+| [finding-triage](./finding-triage/) | Interactively triage Hacktron findings against source (and optionally a live deployment), then fix + commit confirmed issues or set their state in Hacktron | - |
 | [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches | - |
 | [waf-bypass-hunter](./waf-bypass-hunter/) | Find WAF bypass techniques using parser differentials | Clone these sources to ~/.hacktron/skills/waf-bypass-hunter [coraza](https://github.com/corazawaf/coraza), [busboy](https://github.com/mscdex/busboy), [next.js](https://github.com/vercel/next.js) |
 
