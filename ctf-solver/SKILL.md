@@ -17,6 +17,12 @@ allowed-tools: Bash(*) Read Write Network
 
 ## Critical Rules
 
+**ALWAYS create unit tests in `tests/` folder to test hypotheses locally:**
+- Create `tests/` directory for all exploit scripts
+- Write standalone Python test scripts (e.g., `tests/test_sqli.py`, `tests/test_ssti.py`)
+- Test each hypothesis with a dedicated script before trying against the target
+- Keep tests organized and reusable for iteration
+
 **ALWAYS prefer Python scripts for testing and exploitation:**
 - Write standalone Python scripts using `requests` for HTTP interactions
 - Use `socket` with timeouts for TCP connections (never interactive)
@@ -160,8 +166,9 @@ FLAG{the_captured_flag}
 2. ANALYZE all provided source code line by line
 3. MAP the attack surface (inputs, endpoints, functions)
 4. IDENTIFY potential vulnerabilities
-5. WRITE Python scripts to test exploits
-6. ITERATE if initial attempts fail
-7. EXTRACT the flag
-8. DOCUMENT the solution
+5. CREATE tests/ folder and write Python test scripts for each hypothesis
+6. RUN tests against the target environment
+7. ITERATE if initial attempts fail
+8. EXTRACT the flag
+9. DOCUMENT the solution
 ```
