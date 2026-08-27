@@ -22,6 +22,13 @@
       "description": "Reverse-engineer compiled binaries (JARs, DLLs) to decompile, diff, and analyze security patches.",
       "author": { "name": "Hacktron", "url": "https://hacktron.ai" },
       "source": "./patch-diff-analyzer"
+    },
+    {
+      "name": "hol-guard",
+      "version": "1.0.0",
+      "description": "Protect supported local AI coding harnesses with HOL Guard before mutation-bearing tool work using Guard-owned setup, verification, approvals, and audit evidence.",
+      "author": { "name": "Hashgraph Online", "url": "https://hol.org" },
+      "source": "./hol-guard"
     }
   ]
 }
