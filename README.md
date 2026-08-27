@@ -23,6 +23,7 @@ This repo is also a [Claude Code plugin marketplace](https://docs.claude.com/en/
 
 # Or install a specific skill directly
 /plugin install finding-triage@hacktron
+/plugin install hol-guard@hacktron
 ```
 
 Install from a local clone instead:
@@ -35,6 +36,7 @@ git clone https://github.com/HacktronAI/skills.git
 # From the parent directory of the clone
 /plugin marketplace add ./skills
 /plugin install finding-triage@hacktron
+/plugin install hol-guard@hacktron
 ```
 
 ### With Hacktron CLI
@@ -48,6 +50,7 @@ hacktron skills list
 
 # Enable a skill
 hacktron skills enable patch-diff-analyzer
+hacktron skills enable hol-guard
 
 # Disable a skill
 hacktron skills disable patch-diff-analyzer
@@ -62,6 +65,7 @@ Skills are automatically discovered and can be enabled/disabled from the extensi
 | Skill | Description | Sources |
 |-------|-------------|---------|
 | [finding-triage](./finding-triage/) | Interactively triage Hacktron findings against source (and optionally a live deployment), then fix + commit confirmed issues or set their state in Hacktron | - |
+| [hol-guard](./hol-guard/) | Protect supported local AI coding harnesses with HOL Guard before mutation-bearing tool work | [HOL Guard](https://github.com/hashgraph-online/hol-guard) |
 | [patch-diff-analyzer](./patch-diff-analyzer/) | Reverse-engineer compiled binaries (JARs, DLLs) to analyze security patches | - |
 
 ## Compatible Skill Repositories
