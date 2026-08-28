@@ -31,14 +31,14 @@ Probe the real CLI first:
 hol-guard --version
 ```
 
-If it is unavailable and the user authorized runtime setup, install the current stable HOL Guard 3.0.10 release in an isolated tool environment:
+If it is unavailable and the user authorized runtime setup, install the current stable HOL Guard 3.0.11 release in an isolated tool environment:
 
 ```bash
-uv tool install "hol-guard[cisco]==3.0.10"
+uv tool install "hol-guard[cisco]==3.0.11"
 hol-guard --version
 ```
 
-Require the version check to report `3.0.10`. Do not silently replace the pin with `latest`, a prerelease, or a branch URL.
+Require the version check to report `3.0.11`. Do not silently replace the pin with `latest`, a prerelease, or a branch URL.
 
 Resolve the supported local harness from Guard itself:
 
