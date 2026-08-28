@@ -70,10 +70,12 @@ Inspect Guard-owned decisions before acting:
 
 ```bash
 hol-guard approvals
-hol-guard approvals open
+hol-guard approvals open <request-id>
 hol-guard receipts
 hol-guard diff <detected-harness>
 ```
+
+Use the exact pending request ID returned by `hol-guard approvals` when opening its approval page.
 
 Only when the user has reviewed the risk reason and explicitly chosen a terminal decision:
 
